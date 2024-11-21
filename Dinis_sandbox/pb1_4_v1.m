@@ -67,7 +67,7 @@ a_vals = [4, 5, 6];
 Eqns_with_geometry = subs(Eqns, [x, y, phi, a1, a2, a3], [x_vec a_vals])
 
 % Solve symbolically 
-[sol_theta1, sol_theta2, sol_theta3] = solve(IK_eqns2_with_geometry, [theta1, theta2, theta3], 'PrincipalValue', true)
+[sol_theta1, sol_theta2, sol_theta3] = solve(Eqns_with_geometry, [theta1, theta2, theta3], 'PrincipalValue', true)
 % NEEDS TO BE MODIFIED TO OUTPUT ALL SOLUTIONS
 
 % Convert symbolic solutions to numeric for numerical refinement
