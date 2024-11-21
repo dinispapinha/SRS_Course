@@ -85,7 +85,7 @@ omega_joints = zeros(3, nb_of_joints + 1);
 omega_joints(:, 1) = [0; 0; 0];
 v_joints = zeros(3, nb_of_joints + 1);
 v_joints(:, 1) = [0; 0; 0]; % We assume the base with no linear velocity (fixed)
-
+pos_i_plus_1_in_i = zeros(4,nb_of_joints);
 for i = 1:nb_of_joints
     R_matrixes(:, :, i) = [
         cos(joints(i+1, 4)), -sin(joints(i+1, 4)), 0;
@@ -94,8 +94,23 @@ for i = 1:nb_of_joints
     ];
     theta_dots(:, i+1) = [0; 0; 1]; % We assume 1 here but value to be changed
     omega_joints(:, i+1) = R_matrixes(:, :, i) * omega_joints(:, i) + theta_dots(:, i+1);
-    pos_i_plus_1_in_i = T_matrixes(:, :, i) * [0; 0; 0; 1];
+    pos_i_plus_1_in_i(:,i) = T_matrixes(:, :, i) * [0; 0; 0; 1];
     fprintf('Position of joint %d in frame %d :\n', i, i-1);
-    v_joints(:, i+1) = R_matrixes(:, :, i) * (v_joints(:, i) + cross(omega_joints(:, i),pos_i_plus_1_in_i));
-    disp(pos_i_plus_1_in_i(1:3));
+    v_joints(:, i+1) = R_matrixes(:, :, i) * (v_joints(:, i) + cross(omega_joints(:, i),pos_i_plus_1_in_i(1:3,i)));
+    disp(pos_i_plus_1_in_i(1:3,i));
 end
+
+ % v_w = zeros(
+
+% for i = 2:4
+%     v_w(3,i+1) = omega_joints(3,i);
+%     for j = 1:2
+%         v_w(j,i-1) = v_joints(j,i);
+%     end
+% 
+%     for k = 3:3
+% 
+% 
+%     end
+% end
+% 
