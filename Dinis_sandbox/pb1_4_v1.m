@@ -1,5 +1,5 @@
 % Author: Dinis Papinha
-% Date: 15/11/2024
+% Date: 22/11/2024
 
 clc;
 clear;
@@ -62,22 +62,24 @@ Eqns = [
 ]
 
 % Give values of x, y, phi, and link lengths
-x_vec = [1, 1, pi/4];
-a_vals = [4, 5, 6];    
+% x_vec = [3, 0, pi/4];
+% a_vals = [2, 2, 0.5];   
+x_vec = [3, 0, pi/4];
+a_vals = [2, 2, 0.5];   
 Eqns_with_geometry = subs(Eqns, [x, y, phi, a1, a2, a3], [x_vec a_vals])
 
 % Solve symbolically 
-[sol_theta1, sol_theta2, sol_theta3] = solve(Eqns_with_geometry, [theta1, theta2, theta3], 'PrincipalValue', true)
+[sol_theta1, sol_theta2, sol_theta3] = solve(Eqns_with_geometry, [theta1, theta2, theta3])%,'ReturnConditions', 'true')
 % NEEDS TO BE MODIFIED TO OUTPUT ALL SOLUTIONS
 
-% Convert symbolic solutions to numeric for numerical refinement
-sol_theta1_num = double(sol_theta1);
-sol_theta2_num = double(sol_theta2);
-sol_theta3_num = double(sol_theta3);
-
-% Display the symbolic solutions
-disp('Symbolic Solutions:');
-disp([sol_theta1_num, sol_theta2_num, sol_theta3_num]);
+% % Convert symbolic solutions to numeric for numerical refinement
+% sol_theta1_num = double(sol_theta1);
+% sol_theta2_num = double(sol_theta2);
+% sol_theta3_num = double(sol_theta3);
+% 
+% % Display the symbolic solutions
+% disp('Symbolic Solutions:');
+% disp([sol_theta1_num, sol_theta2_num, sol_theta3_num]);
 
 %% Inverse Kinematics (Numerical)
 
