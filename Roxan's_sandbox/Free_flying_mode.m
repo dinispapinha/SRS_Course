@@ -1,0 +1,93 @@
+%Author : Roxan PONS
+
+clc;
+clear;
+close all;
+
+%% Forward Kinematcs (Symbolic)
+%Symbolic parameters
+syms alpha0 alpha1 alpha2 a0 a1 a2 d1 d2 d3 theta1 theta2 theta3 real
+syms nb_of_joints L_X_EE L_Y_EE real
+
+%Modified Denavit-Hartenberg table
+M_D_H = [
+    alpha0 a0 d1 theta1
+    alpha1 a1 d2 theta2
+    alpha2 a2 d3 theta3
+    ]
+
+%Computing of transformation matrices
+T_0_1 = T_matrix(M_D_H(1,:))
+T_1_2 = T_matrix(M_D_H(2,:))
+T_2_3 = T_matrix(M_D_H(3,:))
+
+T_0_2 = T_0_1 * T_1_2
+T_0_3 = T_0_2 * T_2_3
+T_1_3 = T_1_2 * T_2_3
+
+Pos_EE = T_0_3(1:2,4)+ [L_X_EE; L_Y_EE] %I admit that we want the tool position and not the wrist joint position*
+
+%% Forward Kinematics numeric computation
+
+% Robot's parameters definition
+alpha_values = [0, 0, 0];
+a_values = [0, 1, 1]; 
+d_values = [0, 0, 0];
+theta_values = deg2rad([60, -120, 60]); 
+
+
+% Numerical evaluation of T_0_3 and End effector position
+T_0_3_numeric = double(subs(T_0_3, [alpha0, alpha1, alpha2, a0, a1, a2, d1, d2, d3, theta1, theta2, theta3], [alpha_values, a_values, d_values, theta_values]))
+Pos_EE_numeric = double(subs(Pos_EE, [alpha0, alpha1, alpha2, a0, a1, a2, d1, d2, d3, theta1, theta2, theta3, L_X_EE, L_Y_EE], [alpha_values, a_values, d_values, theta_values, 1, 0]))
+
+disp('End-Effector Position (Numerical):');
+disp(Pos_EE_numeric);
+
+%% Inverse Kinematics (Symbolic)
+%Symbolic parameters
+
+syms c2 s2 k1 k2 theta1_inv theta2_inv theta3_inv real
+syms L1 L2 x y phi real
+
+T_W_B = [
+    cos(phi) -sin(phi) 0 x 
+    sin(phi) cos(phi) 0 y
+    0 0 1 0
+    0 0 0 1
+]
+
+c2 = (x^2 + y^2 - a1^2 -a2^2) / (2 * a1 * a2)
+s2 = [sqrt(1 - c2^2), -sqrt(1 - c2^2)]
+theta2_inv = atan2(s2, c2)
+k1 = a1 + a2 * c2
+k2 = a2 * s2
+theta1_inv = atan2(y, x) - atan2(k2, k1)
+theta3_inv = atan2(sin(phi), cos(phi)) - theta1_inv - theta2_inv
+
+%% Inverse Kinematics numeric computation
+
+%Position parameters of the robot
+
+Num_pos = [1, 0, 0]
+
+c2_num = double(subs(c2,[x, y, phi, a1, a2], [Num_pos, a_values(2:3)]))
+
+if abs(c2_num) <= 1
+    s2_num = double(subs(s2, [x, y, phi, a1, a2], [Num_pos, a_values(2:3)]))
+    theta2_inv_num = double(subs(theta2_inv, [x, y, phi, a1, a2], [Num_pos, a_values(2:3)]))
+    k1_num = double(subs(k1, [x, y, phi, a1, a2], [Num_pos, a_values(2:3)]))
+    k2_num = double(subs(k2, [x, y, phi, a1, a2], [Num_pos, a_values(2:3)]))
+    theta1_inv_num = double(subs(theta1_inv, [x, y, phi, a1, a2], [Num_pos, a_values(2:3)]))
+    theta3_inv_num = double(subs(theta3_inv, [x, y, phi, a1, a2], [Num_pos, a_values(2:3)]))
+    for i = 1:length(theta3_inv_num)
+        fprintf('Position number {%d} possible :\n', i);
+        disp(rad2deg([theta1_inv_num(i), theta2_inv_num(i), theta3_inv_num(i)]));
+    end
+else
+    disp('ERROR: Robot can not reach the coordinates.');
+end
+
+%% Jacobian matrix
+J = jacobian(Pos_EE, [theta1, theta2, theta3]);
+disp('Jacobian Matrix:');
+disp(J);
